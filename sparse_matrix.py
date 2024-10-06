@@ -11,7 +11,13 @@ class RowList:
         self.row_index = row_index
         self.first = None
         self.next = None
-
+    def get_element(self, col_index):
+        current = self.first
+        while current is not None:
+            if current.col == col_index:
+                return current.value  # Return the value if the column matches
+            current = current.next
+        return 0 
 
 class SparseMatrix:
     def __init__(self, matrix_file_path=None):
