@@ -1,5 +1,6 @@
-from sparse_matrix import SparseMatrix
 from matrix_operations import MatrixOperations
+from sparse_matrix import SparseMatrix
+
 
 def main():
     print("Sparse Matrix Operations")
@@ -9,12 +10,11 @@ def main():
     choice = input("Select operation (1/2/3): ").strip()
 
     # Predefined paths for the matrix files
-    matrix_file_1 = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/easy_sample_03_1.txt"  
-    matrix_file_2 = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/easy_sample_03_2.txt"  
-    result_file = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/easy_sample_result3.txt"  
+    matrix_file_1 = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/test_file_1.txt"  
+    matrix_file_2 = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/test_file_2.txt"  
+    result_file = "/home/kerie/Documents/school-work/SparseMatrix/sample_input_for_students/easy_sample_result.txt"  
 
     try:
-        # Initialize the sparse matrices by reading from the predefined file paths
         print(f"Loading matrix A from {matrix_file_1}...")
         matrix_a = SparseMatrix(matrix_file_1)
         print(f"Matrix A loaded successfully: {matrix_a}")
@@ -23,21 +23,21 @@ def main():
         matrix_b = SparseMatrix(matrix_file_2)
         print(f"Matrix B loaded successfully: {matrix_b}")
 
-        ops = MatrixOperations()  # Instantiate MatrixOperations without arguments
+        ops = MatrixOperations()  # Create an instance of MatrixOperations
 
         # Perform the chosen operation
         if choice == '1':
             print("Performing addition of two matrices...")
-            result = ops.add(matrix_a, matrix_b)  # Pass both matrices to the add method
-            print("Addition result:", result)
+            result = ops.add(matrix_a, matrix_b)
+            print("Addition result:\n", result)
         elif choice == '2':
             print("Performing subtraction of two matrices...")
-            result = ops.subtract(matrix_a, matrix_b)  # Pass both matrices to the subtract method
-            print("Subtraction result:", result)
+            result = ops.subtract(matrix_a, matrix_b)
+            print("Subtraction result:\n", result)
         elif choice == '3':
             print("Performing multiplication of two matrices...")
-            result = ops.multiply(matrix_a, matrix_b)  # Pass both matrices to the multiply method
-            print("Multiplication result:", result)
+            result = ops.multiply(matrix_a, matrix_b)
+            print("Multiplication result:\n", result)
         else:
             print("Invalid choice! Please select either 1, 2, or 3.")
             return

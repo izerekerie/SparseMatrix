@@ -3,66 +3,132 @@ from sparse_matrix import SparseMatrix
 
 class MatrixOperations:
     def add(self, matrix_a, matrix_b):
-        """
-        Perform matrix addition and return the result as a new SparseMatrix.
-        Assumes both matrices have the same dimensions.
-        """
         if matrix_a.num_rows != matrix_b.num_rows or matrix_a.num_columns != matrix_b.num_columns:
             raise ValueError("Matrices must have the same dimensions for addition.")
-
-        # Initialize the result matrix
-        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_a.num_columns)
-
-        # Add elements from the first matrix
-        for (row, col), value in matrix_a.elements.items():
-            result.set_element(row, col, value)
-
-        # Add elements from the second matrix
-        for (row, col), value in matrix_b.elements.items():
-            existing_value = result.get_element(row, col)
-            result.set_element(row, col, existing_value + value)
-
+        
+        result = SparseMatrix()  # Create an empty SparseMatrix
+        
+        # Process both matrices row by row
+        row_a = matrix_a.first_row
+        row_b = matrix_b.first_row
+        
+        while row_a is not None or row_b is not None:
+            if row_b is None or (row_a is not None and row_a.row_index < row_b.row_index):
+                # Copy row from matrix_a
+                self._copy_row(result, row_a)
+                row_a = row_a.next
+            elif row_a is None or row_a.row_index > row_b.row_index:
+                # Copy row from matrix_b
+                self._copy_row(result, row_b)
+                row_b = row_b.next
+            else:
+                # Add corresponding rows
+                self._add_rows(result, row_a, row_b)
+                row_a = row_a.next
+                row_b = row_b.next
+        
         return result
 
     def subtract(self, matrix_a, matrix_b):
-        """
-        Perform matrix subtraction and return the result as a new SparseMatrix.
-        Assumes both matrices have the same dimensions.
-        """
         if matrix_a.num_rows != matrix_b.num_rows or matrix_a.num_columns != matrix_b.num_columns:
             raise ValueError("Matrices must have the same dimensions for subtraction.")
-
-        # Initialize the result matrix
-        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_a.num_columns)
-
-        # Add elements from the first matrix
-        for (row, col), value in matrix_a.elements.items():
-            result.set_element(row, col, value)
-
-        # Subtract elements from the second matrix
-        for (row, col), value in matrix_b.elements.items():
-            existing_value = result.get_element(row, col)
-            result.set_element(row, col, existing_value - value)
-
+        
+        result = SparseMatrix()  # Create an empty SparseMatrix
+        
+        # Process both matrices row by row
+        row_a = matrix_a.first_row
+        row_b = matrix_b.first_row
+        
+        while row_a is not None or row_b is not None:
+            if row_b is None or (row_a is not None and row_a.row_index < row_b.row_index):
+                # Copy row from matrix_a
+                self._copy_row(result, row_a)
+                row_a = row_a.next
+            elif row_a is None or row_a.row_index > row_b.row_index:
+                # Copy negative of row from matrix_b
+                self._copy_row_negative(result, row_b)
+                row_b = row_b.next
+            else:
+                # Subtract corresponding rows
+                self._subtract_rows(result, row_a, row_b)
+                row_a = row_a.next
+                row_b = row_b.next
+        
         return result
 
     def multiply(self, matrix_a, matrix_b):
-        """
-        Perform matrix multiplication and return the result as a new SparseMatrix.
-        The number of columns in the first matrix must equal the number of rows in the second matrix.
-        """
         if matrix_a.num_columns != matrix_b.num_rows:
             raise ValueError("Matrix dimensions are incompatible for multiplication.")
-
-        # Initialize the result matrix
-        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_b.num_columns)
-
-        # Perform multiplication
-        for (row_a, col_a), value_a in matrix_a.elements.items():
-            for (row_b, col_b), value_b in matrix_b.elements.items():
-                if col_a == row_b:
-                    # Multiply corresponding elements and add to the result matrix
-                    existing_value = result.get_element(row_a, col_b)
-                    result.set_element(row_a, col_b, existing_value + value_a * value_b)
-
+        
+        result = SparseMatrix()  # Create an empty SparseMatrix
+        
+        row_a = matrix_a.first_row
+        while row_a is not None:
+            row_b = matrix_b.first_row
+            while row_b is not None:
+                # Multiply corresponding elements and add to result
+                self._multiply_row_col(result, row_a, row_b)
+                row_b = row_b.next
+            row_a = row_a.next
+        
         return result
+
+    def _copy_row(self, result, row):
+        current = row.first
+        while current is not None:
+            result.set_element(row.row_index, current.col, current.value)
+            current = current.next
+
+    def _copy_row_negative(self, result, row):
+        current = row.first
+        while current is not None:
+            result.set_element(row.row_index, current.col, -current.value)
+            current = current.next
+
+    def _add_rows(self, result, row_a, row_b):
+        node_a = row_a.first
+        node_b = row_b.first
+        
+        while node_a is not None or node_b is not None:
+            if node_b is None or (node_a is not None and node_a.col < node_b.col):
+                result.set_element(row_a.row_index, node_a.col, node_a.value)
+                node_a = node_a.next
+            elif node_a is None or node_a.col > node_b.col:
+                result.set_element(row_a.row_index, node_b.col, node_b.value)
+                node_b = node_b.next
+            else:
+                sum_value = node_a.value + node_b.value
+                if sum_value != 0:
+                    result.set_element(row_a.row_index, node_a.col, sum_value)
+                node_a = node_a.next
+                node_b = node_b.next
+
+    def _subtract_rows(self, result, row_a, row_b):
+        node_a = row_a.first
+        node_b = row_b.first
+        
+        while node_a is not None or node_b is not None:
+            if node_b is None or (node_a is not None and node_a.col < node_b.col):
+                result.set_element(row_a.row_index, node_a.col, node_a.value)
+                node_a = node_a.next
+            elif node_a is None or node_a.col > node_b.col:
+                result.set_element(row_a.row_index, node_b.col, -node_b.value)
+                node_b = node_b.next
+            else:
+                diff_value = node_a.value - node_b.value
+                if diff_value != 0:
+                    result.set_element(row_a.row_index, node_a.col, diff_value)
+                node_a = node_a.next
+                node_b = node_b.next
+
+    def _multiply_row_col(self, result, row_a, row_b):
+        node_a = row_a.first
+        while node_a is not None:
+            node_b = row_b.first
+            while node_b is not None:
+                if node_a.col == row_b.row_index:
+                    product = node_a.value * node_b.value
+                    current_value = result.get_element(row_a.row_index, node_b.col)
+                    result.set_element(row_a.row_index, node_b.col, current_value + product)
+                node_b = node_b.next
+            node_a = node_a.next
