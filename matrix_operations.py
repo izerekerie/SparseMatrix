@@ -1,88 +1,68 @@
-class SparseMatrix:
-    # Other functions are assumed to be the same as the earlier explanation
-    
-    def add(self, other_matrix):
+from sparse_matrix import SparseMatrix
+
+
+class MatrixOperations:
+    def add(self, matrix_a, matrix_b):
         """
-        Perform matrix addition with another sparse matrix and return the result.
-        This function assumes that both matrices have the same dimensions.
+        Perform matrix addition and return the result as a new SparseMatrix.
+        Assumes both matrices have the same dimensions.
         """
-        # Ensure both matrices have the same dimensions
-        if self.num_rows != other_matrix.num_rows or self.num_columns != other_matrix.num_columns:
+        if matrix_a.num_rows != matrix_b.num_rows or matrix_a.num_columns != matrix_b.num_columns:
             raise ValueError("Matrices must have the same dimensions for addition.")
 
-        # Initialize the result matrix with the same dimensions
-        result = SparseMatrix(num_rows=self.num_rows, num_columns=self.num_columns)
+        # Initialize the result matrix
+        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_a.num_columns)
 
-        # Traverse the first matrix and add all its elements to the result matrix
-        current = self.head
-        while current:
-            result.set_element(current.row, current.column, current.value)
-            current = current.next
+        # Add elements from the first matrix
+        for (row, col), value in matrix_a.elements.items():
+            result.set_element(row, col, value)
 
-        # Traverse the second matrix and add its elements to the result matrix
-        current = other_matrix.head
-        while current:
-            # Add the value to the result matrix by retrieving any existing value and adding to it
-            existing_value = result.get_element(current.row, current.column)
-            new_value = existing_value + current.value
-            result.set_element(current.row, current.column, new_value)
-            current = current.next
+        # Add elements from the second matrix
+        for (row, col), value in matrix_b.elements.items():
+            existing_value = result.get_element(row, col)
+            result.set_element(row, col, existing_value + value)
 
         return result
-    def subtract(self, other_matrix):
+
+    def subtract(self, matrix_a, matrix_b):
         """
-        Perform matrix subtraction with another sparse matrix and return the result.
-        This function assumes that both matrices have the same dimensions.
+        Perform matrix subtraction and return the result as a new SparseMatrix.
+        Assumes both matrices have the same dimensions.
         """
-        # Ensure both matrices have the same dimensions
-        if self.num_rows != other_matrix.num_rows or self.num_columns != other_matrix.num_columns:
+        if matrix_a.num_rows != matrix_b.num_rows or matrix_a.num_columns != matrix_b.num_columns:
             raise ValueError("Matrices must have the same dimensions for subtraction.")
 
-        # Initialize the result matrix with the same dimensions
-        result = SparseMatrix(num_rows=self.num_rows, num_columns=self.num_columns)
+        # Initialize the result matrix
+        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_a.num_columns)
 
-        # Traverse the first matrix and add all its elements to the result matrix
-        current = self.head
-        while current:
-            result.set_element(current.row, current.column, current.value)
-            current = current.next
+        # Add elements from the first matrix
+        for (row, col), value in matrix_a.elements.items():
+            result.set_element(row, col, value)
 
-        # Traverse the second matrix and subtract its elements from the result matrix
-        current = other_matrix.head
-        while current:
-            # Subtract the value from the result matrix by retrieving any existing value and subtracting from it
-            existing_value = result.get_element(current.row, current.column)
-            new_value = existing_value - current.value
-            result.set_element(current.row, current.column, new_value)
-            current = current.next
+        # Subtract elements from the second matrix
+        for (row, col), value in matrix_b.elements.items():
+            existing_value = result.get_element(row, col)
+            result.set_element(row, col, existing_value - value)
 
         return result
-    def multiply(self, other_matrix):
-        """
-        Perform matrix multiplication with another sparse matrix and return the result.
-        For matrix multiplication, the number of columns in the first matrix must match
-        the number of rows in the second matrix.
-        """
-        # Ensure the matrices have compatible dimensions for multiplication
-        if self.num_columns != other_matrix.num_rows:
-            raise ValueError("The number of columns in the first matrix must equal the number of rows in the second matrix.")
 
-        # Initialize the result matrix with the appropriate dimensions
-        result = SparseMatrix(num_rows=self.num_rows, num_columns=other_matrix.num_columns)
+    def multiply(self, matrix_a, matrix_b):
+        """
+        Perform matrix multiplication and return the result as a new SparseMatrix.
+        The number of columns in the first matrix must equal the number of rows in the second matrix.
+        """
+        if matrix_a.num_columns != matrix_b.num_rows:
+            raise ValueError("Matrix dimensions are incompatible for multiplication.")
 
-        # Traverse the first matrix and perform multiplication
-        current = self.head
-        while current:
-            # For each non-zero element in the first matrix, look for corresponding elements in the second matrix
-            other_current = other_matrix.head
-            while other_current:
-                if current.column == other_current.row:
-                    # Perform multiplication: value from the first matrix * value from the second matrix
-                    # The result is added to the appropriate position in the result matrix
-                    existing_value = result.get_element(current.row, other_current.column)
-                    new_value = existing_value + current.value * other_current.value
-                    result.set_element(current.row, other_current.column, new_value)
-                other_current = other_current.next
-            current = current.next
+        # Initialize the result matrix
+        result = SparseMatrix(num_rows=matrix_a.num_rows, num_columns=matrix_b.num_columns)
+
+        # Perform multiplication
+        for (row_a, col_a), value_a in matrix_a.elements.items():
+            for (row_b, col_b), value_b in matrix_b.elements.items():
+                if col_a == row_b:
+                    # Multiply corresponding elements and add to the result matrix
+                    existing_value = result.get_element(row_a, col_b)
+                    result.set_element(row_a, col_b, existing_value + value_a * value_b)
 
         return result
